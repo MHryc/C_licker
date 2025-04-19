@@ -3,14 +3,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <curses.h>
 
-int safe_multiply(int in_num);
+float safe_multiply(float in_num, float multiplier);
 int prefixate(int pvix);
 
-int safe_multiply(int in_num) {
-	int out_num;
+float safe_multiply(float in_num, float multiplier) {
+	float out_num;
 	
-	out_num = in_num * 2;
+	out_num = in_num * multiplier;
 	if (out_num > 32000) {
 		out_num /= 1000;
 	}
@@ -31,63 +32,74 @@ int prefixate(int pvix) {
 
 int main(void) {
 
+	// Define player stats and score count
 	struct points_struct {
-		unsigned int value;
+		float value;
 		int pfx;
-	} points;
-	points.value = 1;
-	points.pfx = 97;
+		float mul;
+	} player = {1.0, 97, 1.1};
 	// from previous version with multi character prefixes, eg. aB
 	//memset(points.pfx, 0, sizeof(points.pfx));
 	//points.pfx_idx = 0;
 
 	//printf("%d\t%d\t%d\t%d\n", 'a', 'z', 'A', 'Z');
 
+	initscr();
+    //noecho();
+
+	refresh();
+
 	// REPL
 	int command;
+	char ch;
 	printf("`1` for help\n");
 
-	while (1) {
-		printf("C_licker> ");
+	while ((ch = getch()) != 'q') {
+		printw("C_licker> ");
 
-		scanf("%d", &command);
-
-		// Prevents an endless loop when ^D or a string is input
-		if (command < 0 || command > 16) {
-			exit(EXIT_FAILURE);
-		}
-
-		switch (command) {
-			case 0:
+		switch (ch) {
+			case '0':
 				exit(EXIT_SUCCESS);
 
-			case 1:
-				printf(
+			case '1':
+				printw(
 					"1\tto get this help\n"
 					"2\tto multiply points\n"
 					"0\tto stop C_licker\n"
 				  );
 				break;
 
-			case 2:
-				int tmp;
-				tmp = safe_multiply(points.value);
+			case ' ':
+				float tmp;
+				tmp = safe_multiply(player.value, player.mul);
+				player.mul += 0.1;
 
-				if (tmp < points.value) {
-					points.pfx = prefixate(points.pfx);
+				if (tmp < player.value) {
+					player.pfx = prefixate(player.pfx);
 				}
-				points.value = tmp;
+				player.value = tmp;
 
-				printf("%d %c\n", points.value, points.pfx);
+				clear();
+
+				printw("%c%f\t%f\n", player.pfx, player.value, player.mul);
+
+				refresh();
+
 				break;
 
-			default:
-				printf(
-					"1\tto get this help\n"
-					"2\tto multiply points\n"
-					"0\tto stop C_licker\n"
-				  );
+			case 'c':
+				clear();
+				break;
+
+//			default:
+//				printf(
+//					"1\tto get this help\n"
+//					"2\tto multiply points\n"
+//					"0\tto stop C_licker\n"
+//				  );
 		}
 	}
+	refresh();
+	endwin();
 	return 0;
 }
