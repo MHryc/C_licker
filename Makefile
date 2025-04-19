@@ -1,5 +1,5 @@
 FC = gcc
-FFLAGS = -O2
+FFLAGS = -O2 -lncurses
 
 all: C_licker
 
